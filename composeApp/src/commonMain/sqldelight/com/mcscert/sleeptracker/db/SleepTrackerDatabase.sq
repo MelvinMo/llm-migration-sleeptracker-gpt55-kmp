@@ -1,0 +1,105 @@
+CREATE TABLE IF NOT EXISTS journals (
+  journalId TEXT PRIMARY KEY NOT NULL,
+  userId TEXT NOT NULL,
+  date TEXT NOT NULL,
+  bedtime TEXT,
+  alarmTime TEXT,
+  sleepDuration TEXT,
+  diaryEntry TEXT,
+  sleepNotes TEXT,
+  createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS sensor_data (
+  id TEXT PRIMARY KEY NOT NULL,
+  userId TEXT NOT NULL,
+  timestamp INTEGER NOT NULL,
+  date TEXT NOT NULL,
+  sensorType TEXT NOT NULL,
+  averageDecibels TEXT,
+  peakDecibels TEXT,
+  frequencyBands TEXT,
+  audioClipUri TEXT,
+  snoreDetected INTEGER,
+  ambientNoiseLevel TEXT,
+  illuminance TEXT,
+  lightLevel TEXT,
+  x TEXT,
+  y TEXT,
+  z TEXT,
+  magnitude TEXT,
+  movementIntensity TEXT,
+  createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+selectJournalByDate:
+SELECT journalId, userId, date, bedtime, alarmTime, sleepDuration, diaryEntry, sleepNotes, createdAt
+FROM journals
+WHERE userId = ? AND date = ?;
+
+selectJournalById:
+SELECT journalId, userId, date, bedtime, alarmTime, sleepDuration, diaryEntry, sleepNotes, createdAt
+FROM journals
+WHERE journalId = ? AND userId = ?;
+
+selectJournalsByUser:
+SELECT journalId, userId, date, bedtime, alarmTime, sleepDuration, diaryEntry, sleepNotes, createdAt
+FROM journals
+WHERE userId = ?
+ORDER BY date DESC;
+
+insertJournal:
+INSERT INTO journals (journalId, userId, date, bedtime, alarmTime, sleepDuration, diaryEntry, sleepNotes, createdAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateJournal:
+UPDATE journals
+SET bedtime = COALESCE(:bedtime, bedtime),
+    alarmTime = COALESCE(:alarmTime, alarmTime),
+    sleepDuration = COALESCE(:sleepDuration, sleepDuration),
+    diaryEntry = COALESCE(:diaryEntry, diaryEntry),
+    sleepNotes = COALESCE(:sleepNotes, sleepNotes)
+WHERE userId = ? AND date = ?;
+
+deleteJournal:
+DELETE FROM journals
+WHERE journalId = ? AND userId = ?;
+
+insertSensorReading:
+INSERT INTO sensor_data (
+  id, userId, timestamp, date, sensorType,
+  averageDecibels, peakDecibels, frequencyBands, audioClipUri, snoreDetected, ambientNoiseLevel,
+  illuminance, lightLevel,
+  x, y, z, magnitude, movementIntensity,
+  createdAt
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectSensorById:
+SELECT id, userId, timestamp, date, sensorType,
+       averageDecibels, peakDecibels, frequencyBands, audioClipUri, snoreDetected, ambientNoiseLevel,
+       illuminance, lightLevel,
+       x, y, z, magnitude, movementIntensity, createdAt
+FROM sensor_data
+WHERE id = ? AND userId = ?;
+
+selectSensorsByUser:
+SELECT id, userId, timestamp, date, sensorType,
+       averageDecibels, peakDecibels, frequencyBands, audioClipUri, snoreDetected, ambientNoiseLevel,
+       illuminance, lightLevel,
+       x, y, z, magnitude, movementIntensity, createdAt
+FROM sensor_data
+WHERE userId = ?
+ORDER BY timestamp DESC;
+
+selectSensorsByDate:
+SELECT id, userId, timestamp, date, sensorType,
+       averageDecibels, peakDecibels, frequencyBands, audioClipUri, snoreDetected, ambientNoiseLevel,
+       illuminance, lightLevel,
+       x, y, z, magnitude, movementIntensity, createdAt
+FROM sensor_data
+WHERE userId = ? AND date = ?
+ORDER BY timestamp DESC;
+
+deleteSensorReading:
+DELETE FROM sensor_data
+WHERE id = ? AND userId = ?;
